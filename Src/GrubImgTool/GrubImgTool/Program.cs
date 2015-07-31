@@ -23,6 +23,7 @@ namespace GrubImgTool
             //tools
             var dd = @"Tools\dd.exe";
             var grub = @"Tools\boot\";
+            var myos = @"Tools\myos.img";
             var grubstage1 = @"Tools\boot\stage1";
 
             //stuff we need
@@ -30,22 +31,12 @@ namespace GrubImgTool
             var folder = options.inputfolder;
 
             //create file
-            StartProcces(dd, "if=" + grubstage1 + " of=" + img, "");
-
+            // StartProcces(dd, "bs=512 if=" + grubstage1 + " of=" + img + "count=2880", "");
+            File.Copy(myos, img);
             using (FileStream fs = File.Open(img, FileMode.Open))
             {
-                using (FatFileSystem floppy = FatFileSystem.FormatFloppy(fs, FloppyDiskType.HighDensity, "MY FLOPPY  "))
-                {
-                    floppy.CreateDirectory("boot");
-
-                    foreach (var i in Directory.GetFiles(grub))
-                    {
-                        using (Stream s = floppy.OpenFile("boot\\" + new FileInfo( i).Name, FileMode.Create))
-                        {
-                            var x = File.ReadAllBytes(i);
-                            s.Write(x, 0, x.Length);
-                        }
-                    }
+                using (FatFileSystem floppy = new FatFileSystem(fs))
+                {                   
                     foreach (var i in Directory.GetFiles(folder))
                     {
                         using (Stream s = floppy.OpenFile(new FileInfo(i).Name, FileMode.Create))
